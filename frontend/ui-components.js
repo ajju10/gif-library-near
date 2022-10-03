@@ -66,3 +66,18 @@ export function EducationalText() {
       </>
   );
 }
+
+export function ShowGifs({gifList}) {
+  return (
+      <>
+        <h3>Here are the gifs</h3>
+        <div className="gif-grid">
+          {gifList.map((item, index) => (
+              <div className="gif-item" key={index}>
+                <img src={item} alt="GIF Image"/>
+              </div>
+          ))}
+        </div>
+      </>
+  );
+}
