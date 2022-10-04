@@ -1,15 +1,15 @@
 import React from 'react';
+import {Image, SimpleGrid} from "@chakra-ui/react";
 
-export function SignInPrompt({gifCount, gifList, onClick}) {
+export function SignInPrompt({gifList, onClick}) {
   return (
-      <main>
-        <h1>Total GIFs: {gifCount}</h1>
-        <ShowGifs gifList={gifList}/>
+      <>
+        <GifList gifList={gifList}/>
         <br/>
         <p style={{textAlign: 'center'}}>
           <button onClick={onClick}>Sign in with NEAR Wallet</button>
         </p>
-      </main>
+      </>
   );
 }
 
@@ -21,16 +21,12 @@ export function SignOutButton({accountId, onClick}) {
   );
 }
 
-export function ShowGifs({gifList}) {
+export function GifList({gifList}) {
   return (
-      <>
-        <div className="gif-grid">
-          {gifList.map((item, index) => (
-              <div className="gif-item" key={index}>
-                <img src={item.gif_link} alt="GIF Image"/>
-              </div>
-          ))}
-        </div>
-      </>
+      <SimpleGrid columns={[2, null, 3]} spacing='40px'>
+        {gifList.map((gif) => (
+            <Image key={gif.gif_id} src={gif.gif_link} alt="GIF Image"/>
+        ))}
+      </SimpleGrid>
   );
 }

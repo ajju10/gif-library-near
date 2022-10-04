@@ -1,52 +1,40 @@
-use core::sync::atomic::{AtomicU64, Ordering};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::env;
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{log, near_bindgen, AccountId};
 
-static GIF_ID: AtomicU64 = AtomicU64::new(100);
-
 #[derive(Clone, Debug, BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct GifItem {
     gif_link: String,
-    gif_id: u64,
+    gif_id: String,
     owner: AccountId,
 }
 
 impl GifItem {
-    fn new(link: String) -> Self {
+    fn new(link: String, gif_id: String) -> Self {
         Self {
             gif_link: link,
-            gif_id: GIF_ID.fetch_add(1, Ordering::Relaxed),
+            gif_id,
             owner: env::signer_account_id(),
         }
     }
 }
 
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize)]
+#[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct GifCollections {
     gif_count: u64,
     gifs: Vec<GifItem>,
 }
 
-impl Default for GifCollections {
-    fn default() -> Self {
-        Self {
-            gif_count: 0,
-            gifs: Vec::new(),
-        }
-    }
-}
-
 #[near_bindgen]
 impl GifCollections {
-    pub fn add_gif(&mut self, link: String) {
-        let item = GifItem::new(link);
+    pub fn add_gif(&mut self, link: String, gif_id: String) {
+        let item = GifItem::new(link, gif_id);
         self.gifs.push(item);
         self.gif_count += 1;
-        log!("{:?} added a new GIF to NEAR", env::signer_account_id())
+        log!("{:?} added a new GIF to NEAR", env::signer_account_id());
     }
 
     pub fn get_gif_count(&self) -> u64 {
@@ -64,7 +52,7 @@ impl GifCollections {
     }
 }
 
-/*
+ /*
  * This part contains the unit tests for smart contracts
  */
 #[cfg(test)]
@@ -77,9 +65,10 @@ mod tests {
         assert_eq!(contract.gif_count, 0);
         assert!(contract.gifs.is_empty());
 
-        contract.add_gif("Hello".to_string());
+        contract.add_gif("Hello".to_string(), "abc".to_string());
         assert_eq!(contract.gif_count, 1);
         assert_eq!(contract.gifs[0].gif_link, "Hello".to_string());
-        assert_eq!(contract.gifs[0].owner, env::signer_account_id())
+        assert_eq!(contract.gifs[0].gif_id, "abc".to_string());
+        assert_eq!(contract.gifs[0].owner, env::signer_account_id());
     }
 }

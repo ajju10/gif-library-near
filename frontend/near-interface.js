@@ -18,11 +18,11 @@ export class GifCollectionContract {
     });
   }
 
-  async addGif(link) {
+  async addGif(link, gifId) {
     return await this.wallet.callMethod({
       contractId: this.contractId,
       method: 'add_gif',
-      args: {'link': link},
+      args: {'link': link, 'gif_id': gifId},
     });
   }
 }

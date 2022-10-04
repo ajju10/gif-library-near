@@ -1,15 +1,17 @@
 import 'regenerator-runtime/runtime';
 import React from 'react';
+import {nanoid} from 'nanoid';
 
 import './assets/global.css';
 
-import {ShowGifs, SignInPrompt, SignOutButton} from './ui-components';
+import {GifList, SignInPrompt, SignOutButton} from './ui-components';
+import {Button, Center, Input, VStack} from "@chakra-ui/react";
 
 export default function App({isSignedIn, gifCollection, wallet}) {
-  const [uiPleaseWait, setUiPleaseWait] = React.useState(true);
+  const [_uiPleaseWait, setUiPleaseWait] = React.useState(true);
   const [inputValue, setInputValue] = React.useState('');
   const [gifList, setGifList] = React.useState([]);
-  const [gifCount, setGifCount] = React.useState(0);
+  const [_gifCount, setGifCount] = React.useState(0);
 
   const getGifCount = async () => {
     gifCollection.getGifCount()
@@ -41,8 +43,9 @@ export default function App({isSignedIn, gifCollection, wallet}) {
       return;
     }
     setInputValue('');
-    console.log('Gif link:', inputValue);
-    gifCollection.addGif(inputValue)
+    let gifId = nanoid();
+    console.log('Gif link:', inputValue, "Gif ID", gifId);
+    gifCollection.addGif(inputValue, gifId)
         .then(async () => {
           await getGifList();
         })
@@ -67,26 +70,30 @@ export default function App({isSignedIn, gifCollection, wallet}) {
   /// If user not signed-in with wallet - show prompt
   if (!isSignedIn) {
     // Sign-in flow will reload the page later
-    return <SignInPrompt gifCount={gifCount} gifList={gifList} onClick={() => wallet.signIn()}/>;
+    return <SignInPrompt gifList={gifList} onClick={() => wallet.signIn()}/>;
   }
 
   return (
       <>
         <SignOutButton accountId={wallet.accountId} onClick={() => wallet.signOut()}/>
-        <main className={uiPleaseWait ? 'please-wait' : ''}>
-          <div className="add-gif-form">
-            <form onSubmit={(event) => {
-              event.preventDefault();
-              sendGifToNear();
-            }}>
-              <input type="text" placeholder="Enter GIF Link"
-                     value={inputValue} onChange={onInputChange}/>
-              <button type="submit">Add to Library</button>
-            </form>
-          </div>
-          <h3>Total GIFs: {gifCount}</h3>
-          <ShowGifs gifList={gifList}/>
-        </main>
+        <Center>
+          <form onSubmit={(event) => {
+            event.preventDefault();
+            sendGifToNear();
+          }}>
+            <VStack>
+              <Input
+                  value={inputValue}
+                  onChange={onInputChange}
+                  placeholder='Enter GIF Link'/>
+              <Button colorScheme='teal'>Add GIF</Button>
+            </VStack>
+          </form>
+        </Center>
+        <br/>
+        <div className="gif-list-container">
+          <GifList gifList={gifList}/>
+        </div>
       </>
   );
 }
