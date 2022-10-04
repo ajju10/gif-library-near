@@ -5,26 +5,60 @@ import './assets/global.css';
 
 import {ShowGifs, SignInPrompt, SignOutButton} from './ui-components';
 
-const gifs = [
-  'https://i.giphy.com/media/eIG0HfouRQJQr1wBzz/giphy.webp',
-  'https://media3.giphy.com/media/L71a8LW2UrKwPaWNYM/giphy.gif?cid=ecf05e47rr9qizx2msjucl1xyvuu47d7kf25tqt2lvo024uo&rid=giphy.gif&ct=g',
-  'https://media4.giphy.com/media/AeFmQjHMtEySooOc8K/giphy.gif?cid=ecf05e47qdzhdma2y3ugn32lkgi972z9mpfzocjj6z1ro4ec&rid=giphy.gif&ct=g',
-  'https://i.giphy.com/media/PAqjdPkJLDsmBRSYUp/giphy.webp',
-]
-
 export default function App({isSignedIn, gifCollection, wallet}) {
-  const greeting = 'Hello';
   const [uiPleaseWait, setUiPleaseWait] = React.useState(true);
+  const [inputValue, setInputValue] = React.useState('');
+  const [gifList, setGifList] = React.useState([]);
+  const [gifCount, setGifCount] = React.useState(0);
 
-  React.useEffect(() => {
+  const getGifCount = async () => {
     gifCollection.getGifCount()
-        .then((count) => {
-          console.log("Gif Count is", count);
-        })
+        .then(setGifCount)
         .catch((err) => {
           alert(err);
           console.log(err)
         })
+  };
+
+  const getGifList = async () => {
+    gifCollection.getGifs()
+        .then((res) => {
+          console.log("GIF List", res);
+          setGifList(res);
+        })
+        .catch((error) => {
+          alert(error);
+          console.log(error);
+        })
+        .finally(async () => {
+          await getGifCount();
+        });
+  };
+
+  const sendGifToNear = async () => {
+    if (inputValue.length === 0) {
+      console.log("No gif link given!");
+      return;
+    }
+    setInputValue('');
+    console.log('Gif link:', inputValue);
+    gifCollection.addGif(inputValue)
+        .then(async () => {
+          await getGifList();
+        })
+        .catch((error) => {
+          alert(error);
+          console.log(error);
+        })
+  };
+
+  const onInputChange = (event) => {
+    const {value} = event.target;
+    setInputValue(value);
+  };
+
+  React.useEffect(() => {
+    getGifList()
         .finally(() => {
           setUiPleaseWait(false);
         })
@@ -33,17 +67,25 @@ export default function App({isSignedIn, gifCollection, wallet}) {
   /// If user not signed-in with wallet - show prompt
   if (!isSignedIn) {
     // Sign-in flow will reload the page later
-    return <SignInPrompt greeting={greeting} onClick={() => wallet.signIn()}/>;
+    return <SignInPrompt gifCount={gifCount} gifList={gifList} onClick={() => wallet.signIn()}/>;
   }
 
   return (
       <>
         <SignOutButton accountId={wallet.accountId} onClick={() => wallet.signOut()}/>
         <main className={uiPleaseWait ? 'please-wait' : ''}>
-          <h1>
-            The contract says: <span className="greeting">{greeting}</span>
-          </h1>
-          <ShowGifs gifList={gifs}/>
+          <div className="add-gif-form">
+            <form onSubmit={(event) => {
+              event.preventDefault();
+              sendGifToNear();
+            }}>
+              <input type="text" placeholder="Enter GIF Link"
+                     value={inputValue} onChange={onInputChange}/>
+              <button type="submit">Add to Library</button>
+            </form>
+          </div>
+          <h3>Total GIFs: {gifCount}</h3>
+          <ShowGifs gifList={gifList}/>
         </main>
       </>
   );

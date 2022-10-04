@@ -1,9 +1,10 @@
+use core::sync::atomic::{AtomicU64, Ordering};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::env;
+use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{log, near_bindgen, AccountId};
-use near_sdk::serde::{Serialize, Deserialize};
 
-static mut GIF_ID: u64 = 0;
+static GIF_ID: AtomicU64 = AtomicU64::new(100);
 
 #[derive(Clone, Debug, BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
@@ -15,10 +16,9 @@ pub struct GifItem {
 
 impl GifItem {
     fn new(link: String) -> Self {
-        unsafe { GIF_ID += 1 }
         Self {
             gif_link: link,
-            gif_id: unsafe { GIF_ID },
+            gif_id: GIF_ID.fetch_add(1, Ordering::Relaxed),
             owner: env::signer_account_id(),
         }
     }
@@ -55,6 +55,12 @@ impl GifCollections {
 
     pub fn get_gifs(&self) -> Vec<GifItem> {
         self.gifs.to_vec()
+    }
+
+    pub fn remove_all_gifs(&mut self) {
+        self.gifs.clear();
+        self.gif_count = 0;
+        log!("Successfully reset the gif library")
     }
 }
 
