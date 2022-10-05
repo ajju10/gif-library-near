@@ -7,13 +7,21 @@ import App from './App';
 import {GifCollectionContract} from './near-interface';
 import {Wallet} from './near-wallet';
 
+const CONTRACT_NAME = 'gif-library.ajju0.testnet';
+
+let contractId = process.env.CONTRACT_NAME || CONTRACT_NAME;
+
+console.log("Account Id", contractId);
+
 // When creating the wallet you can optionally ask to create an access key
 // Having the key enables to call non-payable methods without interrupting the user to sign
-const wallet = new Wallet({createAccessKeyFor: process.env.CONTRACT_NAME})
+const wallet = new Wallet({
+  createAccessKeyFor: contractId
+});
 
 // Abstract the logic of interacting with the contract to simplify your flow
 const gifCollection = new GifCollectionContract({
-  contractId: process.env.CONTRACT_NAME,
+  contractId: contractId,
   walletToUse: wallet,
 });
 

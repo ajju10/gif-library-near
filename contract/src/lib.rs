@@ -44,15 +44,9 @@ impl GifCollections {
     pub fn get_gifs(&self) -> Vec<GifItem> {
         self.gifs.to_vec()
     }
-
-    pub fn remove_all_gifs(&mut self) {
-        self.gifs.clear();
-        self.gif_count = 0;
-        log!("Successfully reset the gif library")
-    }
 }
 
- /*
+/*
  * This part contains the unit tests for smart contracts
  */
 #[cfg(test)]
@@ -61,12 +55,16 @@ mod tests {
 
     #[test]
     fn get_default_gif_collection() {
-        let mut contract = GifCollections::default();
-        assert_eq!(contract.gif_count, 0);
+        let contract = GifCollections::default();
+        assert_eq!(contract.get_gif_count(), 0);
         assert!(contract.gifs.is_empty());
+    }
 
+    #[test]
+    fn add_gif_to_collection() {
+        let mut contract = GifCollections::default();
         contract.add_gif("Hello".to_string(), "abc".to_string());
-        assert_eq!(contract.gif_count, 1);
+        assert_eq!(contract.get_gif_count(), 1);
         assert_eq!(contract.gifs[0].gif_link, "Hello".to_string());
         assert_eq!(contract.gifs[0].gif_id, "abc".to_string());
         assert_eq!(contract.gifs[0].owner, env::signer_account_id());

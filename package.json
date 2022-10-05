@@ -5,6 +5,7 @@
   "scripts": {
     "start": "cd frontend && npm run start",
     "deploy": "cd contract && ./deploy.sh",
+    "deploy:testnet": "cd contract && ./deploytestnet.sh",
     "check": "cd contract && ./check.sh",
     "fmt": "cd contract && cargo fmt",
     "build": "npm run build:contract && npm run build:web",

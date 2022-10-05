@@ -1,5 +1,5 @@
-import { Worker, NearAccount } from 'near-workspaces';
-import anyTest, { TestFn } from 'ava';
+import {Worker, NearAccount} from 'near-workspaces';
+import anyTest, {TestFn} from 'ava';
 
 const test = anyTest as TestFn<{
   worker: Worker;
@@ -20,7 +20,7 @@ test.beforeEach(async (t) => {
 
   // Save state for test runs, it is unique for each test
   t.context.worker = worker;
-  t.context.accounts = { root, contract };
+  t.context.accounts = {root, contract};
 });
 
 test.afterEach(async (t) => {
@@ -30,15 +30,17 @@ test.afterEach(async (t) => {
   });
 });
 
-test('returns the default greeting', async (t) => {
-  const { contract } = t.context.accounts;
-  const message: string = await contract.view('get_greeting', {});
-  t.is(message, 'Hello');
+test('returns the gif list', async (t) => {
+  const {contract} = t.context.accounts;
+  const gifs: [] = await contract.view('get_gifs', {});
+  t.deepEqual(gifs, []);
 });
 
-test('changes the message', async (t) => {
-  const { root, contract } = t.context.accounts;
-  await root.call(contract, 'set_greeting', { message: 'Howdy' });
-  const message: string = await contract.view('get_greeting', {});
-  t.is(message, 'Howdy');
+test('adds a GIF', async (t) => {
+  const {root, contract} = t.context.accounts;
+  await root.call(contract, 'add_gif', {'link': 'abc', 'gif_id': 'a1b2c3d4'});
+  const gifs: [] = await root.call(contract, 'get_gifs', {});
+  const gifCount: number = await contract.view('get_gif_count', {});
+  t.is(gifCount, 1);
+  t.assert(gifs.length !== 0);
 });
